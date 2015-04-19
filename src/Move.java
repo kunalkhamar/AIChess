@@ -58,7 +58,7 @@ public class Move implements Comparable<Move> {
 
 	@Override
 	public boolean equals(Object o) {
-		if (this == null || o == null)		// XOR
+		if (o == null)
 			return false;
 		if (this.getClass() != o.getClass())
 			return false;
@@ -87,11 +87,10 @@ public class Move implements Comparable<Move> {
 
 	/**
 	 * <h3>Hash function</h3><br>
-	 * Does not guarantee uniform hashing<br>
-	 * Only a working model
+	 * A working model, does not guarantee uniform hashing<br>
 	 * 
 	 * Collisions among symmetric pieces are avoided by
-	 * multiplying 'from' coordinates by 2^6
+	 * multiplying 'to' coordinates by 2^4 in addition to incorporating 'from' coordinates
 	 * 
 	 * capture is multiplied by 2^24 so that differences in
 	 * position do not fill up the gap between difference in
