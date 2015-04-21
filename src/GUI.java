@@ -94,7 +94,7 @@ public class GUI implements ActionListener {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
 					// Open rules in web browser
-					Desktop.getDesktop().browse(new URI("http://www.fide.com/component/handbook/?id=124&view=article"));
+					Desktop.getDesktop().browse(new URI("https://www.fide.com/component/handbook/?id=171&view=article"));
 				} catch (IOException e) {
 					e.printStackTrace();
 				} catch (URISyntaxException e) {
@@ -177,7 +177,7 @@ public class GUI implements ActionListener {
 
 	/**
 	 * 1 Convert button presses to moves
-	 * 2 Check if user�s move is valid
+	 * 2 Check if user's move is valid
 	 * 3 Check for termination conditions
 	 */
 	@Override
@@ -187,10 +187,10 @@ public class GUI implements ActionListener {
 		if (prevLoc == -1 && (Engine.board[from / 8][from % 8] == ' ' ||
 				Character.isLowerCase(Engine.board[from / 8][from % 8]))) {
 			prevLoc = curLoc = -1;
-		} else if (prevLoc == -1 || Character.isUpperCase((Engine.board[from / 8][from % 8])))
+		} else if (prevLoc == -1 || Character.isUpperCase((Engine.board[from / 8][from % 8]))) {
 			// first press
 			prevLoc = from;
-		else {
+		} else {
 			// second press
 			curLoc = from;
 
@@ -208,8 +208,9 @@ public class GUI implements ActionListener {
 				userMove = new Move(prevLoc % 8, curLoc % 8,
 						Engine.PIECE_BYTE.get(Engine.board[curLoc / 8][curLoc % 8]),
 						Engine.PIECE_BYTE.get(piece), 'P');
-			} else
+			} else {
 				userMove = new Move(prevLoc, curLoc, Engine.board[curLoc / 8][curLoc % 8]);
+			}
 
 			if (userPossibilities == null)
 				userPossibilities = Engine.getMoves();
@@ -230,30 +231,38 @@ public class GUI implements ActionListener {
 					System.exit(0);
 
 				/* Computer move */
-//				String timeStamp = new SimpleDateFormat("HH:mm:ss").format(Calendar.getInstance().getTime());
-//				System.out.println(timeStamp);
-				long startTime = System.currentTimeMillis();
-				Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
-				long endTime = System.currentTimeMillis();
-				Engine.flipAndSwitchBoard();
-				update();
-				System.out.printf("Nodes explored = %6d\t\tTime: %.3f s%n", Engine.nodesExplored, 
-						(endTime - startTime) / 1000.0);
-				Engine.nodesExplored = 0;
-
-				boolean humanGameOver = !Engine.canMove();
-				if (humanGameOver && Engine.underCheck())
-					// Checkmate
-					JOptionPane.showMessageDialog(frame, "Computer won!");
-				else if (humanGameOver)
-					// Stalemate
-					JOptionPane.showMessageDialog(frame, "Draw");
-				if (humanGameOver)
-					System.exit(0);
-				userPossibilities = Engine.getMoves();
-			}
+				final long startTime = System.currentTimeMillis();
+				Thread computationThread = new Thread() {
+					public void run() {
+						Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
+						onFinish(startTime, System.currentTimeMillis());
+					}
+				};
+				computationThread.start();
+			} else {
 			prevLoc = curLoc = -1;
+			}
 		}
+	}
+	
+	public void onFinish(final long startTime, final long endTime) {
+		Engine.flipAndSwitchBoard();
+		update();
+		System.out.printf("Nodes explored = %6d\t\tTime: %.3f s%n", Engine.nodesExplored, 
+				(endTime - startTime) / 1000.0);
+		Engine.nodesExplored = 0;
+
+		boolean humanGameOver = !Engine.canMove();
+		if (humanGameOver && Engine.underCheck())
+			// Checkmate
+			JOptionPane.showMessageDialog(frame, "Computer won!");
+		else if (humanGameOver)
+			// Stalemate
+			JOptionPane.showMessageDialog(frame, "Draw");
+		if (humanGameOver)
+			System.exit(0);
+		userPossibilities = Engine.getMoves();
+		prevLoc = curLoc = -1;
 	}
 
 	/**

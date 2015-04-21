@@ -467,7 +467,7 @@ public class Engine {
 				if (loc < 16 && Character.isLowerCase(board[r - 1][c + j]))
 					for (int k = 0; k < 2; k++)
 						if (isValidMove(r, c, r - 1, c + j, 'P'))
-							// (column1,column2,captured-piece,new-piece,P)
+							// Notation: (column1,column2,captured-piece,new-piece,P)
 							list.add(new Move(c, c + j, (int) PIECE_BYTE.get(board[r - 1][c + j]), (int) PIECE_BYTE.get(PROMOTION[k]), 'P'));
 			} catch (ArrayIndexOutOfBoundsException e) {
 			}
@@ -480,7 +480,7 @@ public class Engine {
 			if (loc < 16 && board[r - 1][c] == ' ')
 				for (int k = 0; k < 2; k++)
 					if (isValidMove(r, c, r - 1, c, 'P'))
-						// (column1,column2,captured-piece,new-piece,P)
+						// Notation: (column1,column2,captured-piece,new-piece,P)
 						list.add(new Move(c, c, (int) PIECE_BYTE.get(' '), (int) PIECE_BYTE.get(PROMOTION[k]), 'P'));
 			/* Move two up */
 			if (loc >= 48 && board[r - 1][c] == ' ' && board[r - 2][c] == ' ')
@@ -628,9 +628,9 @@ public class Engine {
 	}
 
 	/**
-	 * This implementation uses flipAndSwitchBoard() instead of properties
-	 * of zero-sum games to implement negamax version of the minimax algorithm.
-	 * The pruning algorithm is alpha-beta pruning
+	 * This implementation uses flipAndSwitchBoard() (and properties
+	 * of zero-sum games) to implement negamax version of the minimax algorithm.
+	 * The pruning is done by the alpha-beta heuristic
 	 * 
 	 * @param depth
 	 * @param alpha
@@ -640,6 +640,14 @@ public class Engine {
 	 * @return The best move reported by the search
 	 */
 	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) {
+		/*
+		try {
+			Thread.sleep(1);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		*/
+		
 		nodesExplored++;
 		if (depth == 0) {
 			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
@@ -679,7 +687,7 @@ public class Engine {
 						move = ret;
 				}
 			}
-			/* Early termination */
+			/* Early termination/pruning */
 			if (alpha >= beta) {
 				if (player == 0) {
 					move.alphaBetaScore = beta;
@@ -701,8 +709,9 @@ public class Engine {
 	}
 
 	/**
-	 * Heapsort<br>
-	 * Time (here) ~ O(n + log n) (online)
+	 * Select top k moves
+	 * Uses max heap
+	 * Time ~ O(n log n)
 	 * 
 	 * @param dat
 	 * @return The best few moves

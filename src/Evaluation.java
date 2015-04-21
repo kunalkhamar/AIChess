@@ -1,5 +1,5 @@
 /**
- * Most of this class is designed and written by chess programming theorists 
+ * Most of this class was designed and implemented by chess programming theorists 
  * http://chessprogramming.wikispaces.com/Simplified+evaluation+function
  */
 
