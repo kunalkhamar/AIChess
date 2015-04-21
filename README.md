@@ -1,3 +1,3 @@
 # AIChess
 Runnable JAR:  
-https://www.dropbox.com/s/3eh585emug700f0/AIChess.jar?dl=0
+https://github.com/kunalkhamar/AIChess/blob/master/AIChess.jar?raw=true

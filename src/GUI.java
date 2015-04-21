@@ -146,15 +146,16 @@ public class GUI implements ActionListener {
 	 */
 	private void setButtonColor(int i, int j) {
 		int loc = i * 8 + j;
-		if (i % 2 == 0)
+		if (i % 2 == 0) {
 			if (j % 2 == 0)
 				buttons[loc].setBackground(Color.WHITE);
 			else
 				buttons[loc].setBackground(CHESSBOARD_BLUE);
-		else if (j % 2 == 0)
+		} else if (j % 2 == 0) {
 			buttons[loc].setBackground(CHESSBOARD_BLUE);
-		else
+		} else {
 			buttons[loc].setBackground(Color.WHITE);
+		}
 	}
 
 	/**
@@ -230,22 +231,27 @@ public class GUI implements ActionListener {
 				if (compGameOver)
 					System.exit(0);
 
-				/* Computer move */
-				final long startTime = System.currentTimeMillis();
+				/* Computer move, dispatch on separate thread */
 				Thread computationThread = new Thread() {
 					public void run() {
+						final long startTime = System.currentTimeMillis();
 						Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
-						onFinish(startTime, System.currentTimeMillis());
+						onFinishComputation(startTime, System.currentTimeMillis());
 					}
 				};
 				computationThread.start();
 			} else {
-			prevLoc = curLoc = -1;
+				prevLoc = curLoc = -1;
 			}
 		}
 	}
 	
-	public void onFinish(final long startTime, final long endTime) {
+	/**
+	 * Callback for when the engine finishes computation of the computer's next move
+	 * @param startTime
+	 * @param endTime
+	 */
+	public void onFinishComputation(final long startTime, final long endTime) {
 		Engine.flipAndSwitchBoard();
 		update();
 		System.out.printf("Nodes explored = %6d\t\tTime: %.3f s%n", Engine.nodesExplored, 
@@ -279,8 +285,10 @@ public class GUI implements ActionListener {
 	 */
 	public void update() {
 		for (int i = 0; i < 8; i++)
-			for (int j = 0; j < 8; j++)
+			for (int j = 0; j < 8; j++) {
 				buttons[i * 8 + j].setIcon(CHAR_IMAGE.get(Engine.board[i][j]));
+				setButtonColor(i, j);
+			}
 	}
 
 }

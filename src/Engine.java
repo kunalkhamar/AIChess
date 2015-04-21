@@ -66,16 +66,17 @@ public class Engine {
 		});
 
 		/* Set difficulty */
-		String[] option = { "Medium", "Easy", "Easier" };
+//		String[] option = { "Medium", "Easy", "Easier" };
+		String[] option = { "Easy", "Easier" };
 		int easy = JOptionPane.showOptionDialog(null, "Select difficulty", "Difficulty Levels",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
-		if (easy == 0) {
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
+		if (easy == -1) {	// "Medium" difficulty disabled for now
 			maxDepth = 8;
 			maxBreadth = 9;
-		} else if (easy == 1) {
+		} else if (easy == 0) {
 			maxDepth = 7;
 			maxBreadth = 8;
-		} else if (easy == 2) {
+		} else if (easy == 1) {
 			maxDepth = 5;
 			maxBreadth = 12;
 		}
