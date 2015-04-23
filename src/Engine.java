@@ -27,6 +27,8 @@ public class Engine {
 	public static int kingPosU, kingPosL;				// U/L - Upper/Lower case; king's position
 	public static int maxDepth = 7, maxBreadth = 7;		// depth = # of plies, breadth = # moves explored per ply
 	static long nodesExplored = 0;
+	static double totalTime = 0;
+	static int botMoves = 0;
 
 	public static final Map<Character, Byte> PIECE_BYTE = new HashMap<>();
 	/* static initializer */
@@ -641,14 +643,6 @@ public class Engine {
 	 * @return The best move reported by the search
 	 */
 	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) {
-		/*
-		try {
-			Thread.sleep(1);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		*/
-		
 		nodesExplored++;
 		if (depth == 0) {
 			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
@@ -688,7 +682,7 @@ public class Engine {
 						move = ret;
 				}
 			}
-			/* Early termination/pruning */
+			/* Early termination/pruning heuristic */
 			if (alpha >= beta) {
 				if (player == 0) {
 					move.alphaBetaScore = beta;
@@ -711,7 +705,7 @@ public class Engine {
 
 	/**
 	 * Select top k moves
-	 * Uses max heap
+	 * Uses a max heap
 	 * Time ~ O(n log n)
 	 * 
 	 * @param dat

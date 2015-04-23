@@ -76,6 +76,14 @@ public class GUI implements ActionListener {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
+		/* This enables native Java look-and-feel
+		try {
+		    UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+		} catch (Exception e) {
+		            e.printStackTrace();
+		}
+		*/
+		
 		frame = new JFrame("AI Chess");
 		frame.setBackground(new Color(240, 240, 240));
 		frame.setBounds(0, 0, 448, 20 + 448);
@@ -156,6 +164,10 @@ public class GUI implements ActionListener {
 		} else {
 			buttons[loc].setBackground(Color.WHITE);
 		}
+		
+		// Mac OS compatibility settings
+		buttons[loc].setOpaque(true);
+		buttons[loc].setBorderPainted(false);
 	}
 
 	/**
@@ -254,8 +266,11 @@ public class GUI implements ActionListener {
 	public void onFinishComputation(final long startTime, final long endTime) {
 		Engine.flipAndSwitchBoard();
 		update();
-		System.out.printf("Nodes explored = %6d\t\tTime: %.3f s%n", Engine.nodesExplored, 
-				(endTime - startTime) / 1000.0);
+		double moveTime = (endTime - startTime) / 1000.0;
+		Engine.botMoves++;
+		Engine.totalTime += (endTime - startTime);
+		System.out.printf("Nodes explored = %6d\t\t Time: %.3f s\t\t Avg: %.3f s%n", 
+				Engine.nodesExplored, moveTime, Engine.totalTime / 1000.0 / Engine.botMoves);
 		Engine.nodesExplored = 0;
 
 		boolean humanGameOver = !Engine.canMove();

@@ -96,8 +96,8 @@ public class Move implements Comparable<Move> {
 	 * captured pieces' int value, again, helping avoid collisions
 	 */
 	public int hashCode() {
-//		return ((y1 * 8 + x1) + ((y2 * 8 + x2) << 4) + (Engine.board[y1][x1] << 14) + (capture << 24));
-		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 3) + (Engine.board[y1][x1] << 6) + (capture << 9));
+		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 4) + (Engine.board[y1][x1] << 14) + (capture << 24));
+//		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 3) + (Engine.board[y1][x1] << 6) + (capture << 9));
 	}
 
 	@Override
