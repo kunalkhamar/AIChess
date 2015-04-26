@@ -712,19 +712,24 @@ public class Engine {
 	 * @return The best few moves
 	 */
 	public static Queue<Move> sortAndFilterMoves(Collection<Move> dat) {
-		Queue<Move> ret = new ArrayDeque<>();
-		PriorityQueue<Move> pq = new PriorityQueue<>(6, Collections.reverseOrder());	// Descending comparator
+		PriorityQueue<Move> minpq = new PriorityQueue<>(10);
+		PriorityQueue<Move> maxpq = new PriorityQueue<>(10, Collections.reverseOrder());	// Descending comparator
 
 		for (Move m : dat) {
 			makeMove(m);
 			m.evalPlaceHolder = -Evaluation.evaluate(-1, 0);	// store eval's score
 			undoMove(m);
-			pq.add(m);											// @see Move.compareTo() for priority
+			
+			maxpq.add(m);										// @see Move.compareTo() for priority
+			minpq.add(m);
+			if (maxpq.size() > maxBreadth)
+				maxpq.remove(minpq.poll());
 		}
 
 		// Consider best few moves only
+		Queue<Move> ret = new ArrayDeque<>();
 		for (int i = 0, t = Math.min(maxBreadth, dat.size()); i < t; i++)
-			ret.offer(pq.poll());
+			ret.offer(maxpq.poll());
 		return ret;
 	}
 
