@@ -641,8 +641,13 @@ public class Engine {
 	 * @param move
 	 * @param player
 	 * @return The best move reported by the search
+	 * @throws InterruptedException 
 	 */
-	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) {
+	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) throws InterruptedException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new InterruptedException();
+		}
+		
 		nodesExplored++;
 		if (depth == 0) {
 			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
@@ -716,6 +721,11 @@ public class Engine {
 		PriorityQueue<Move> pq = new PriorityQueue<>(6, Collections.reverseOrder());	// Descending comparator
 
 		for (Move m : dat) {
+//			try {
+//				makeMove(m);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 			makeMove(m);
 			m.evalPlaceHolder = -Evaluation.evaluate(-1, 0);	// store eval's score
 			undoMove(m);

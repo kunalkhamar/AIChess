@@ -34,6 +34,8 @@ public class GUI implements ActionListener {
 
 	JButton[] buttons = new JButton[64];// 'squares' of the board
 	int prevLoc = -1, curLoc = -1;		// button presses
+	
+	Thread computationThread ;
 
 	/* Images for pieces */
 	ImageIcon K = scale(new ImageIcon(getClass().getResource("/res/White/wking.png")), W, H);
@@ -228,6 +230,11 @@ public class GUI implements ActionListener {
 			if (userPossibilities == null)
 				userPossibilities = Engine.getMoves();
 			if (userPossibilities.contains(userMove)) {		// move is valid
+//				try {
+//					Engine.makeMove(userMove);
+//				} catch (InterruptedException e1) {
+//					e1.printStackTrace();
+//				}
 				Engine.makeMove(userMove);
 				update();
 				Engine.flipAndSwitchBoard();
@@ -244,11 +251,15 @@ public class GUI implements ActionListener {
 					System.exit(0);
 
 				/* Computer move, dispatch on separate thread */
-				Thread computationThread = new Thread() {
+				computationThread = new Thread() {
 					public void run() {
 						final long startTime = System.currentTimeMillis();
-						Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
-						onFinishComputation(startTime, System.currentTimeMillis());
+						try {
+							Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
+							onFinishComputation(startTime, System.currentTimeMillis());
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
 					}
 				};
 				computationThread.start();
@@ -290,6 +301,14 @@ public class GUI implements ActionListener {
 	 * Reset and start new game
 	 */
 	public void reset() {
+		if (computationThread.isAlive()) {
+			try {
+				computationThread.interrupt();
+				computationThread.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		Engine.reset();
 		update();
 	}
