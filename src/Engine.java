@@ -641,8 +641,13 @@ public class Engine {
 	 * @param move
 	 * @param player
 	 * @return The best move reported by the search
+	 * @throws InterruptedException 
 	 */
-	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) {
+	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) throws InterruptedException {
+		if (Thread.currentThread().isInterrupted()) {
+			throw new InterruptedException();
+		}
+		
 		nodesExplored++;
 		if (depth == 0) {
 			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
@@ -706,30 +711,30 @@ public class Engine {
 	/**
 	 * Select top k moves
 	 * Uses a max heap
-	 * Time ~ O(n log n)
+	 * Time ~ O(n log k)
 	 * 
 	 * @param dat
 	 * @return The best few moves
 	 */
 	public static Queue<Move> sortAndFilterMoves(Collection<Move> dat) {
-		PriorityQueue<Move> minpq = new PriorityQueue<>(10);
-		PriorityQueue<Move> maxpq = new PriorityQueue<>(10, Collections.reverseOrder());	// Descending comparator
+		PriorityQueue<Move> minPQ = new PriorityQueue<>(10);
+		PriorityQueue<Move> maxPQ = new PriorityQueue<>(10, Collections.reverseOrder());	// Descending comparator
 
 		for (Move m : dat) {
 			makeMove(m);
 			m.evalPlaceHolder = -Evaluation.evaluate(-1, 0);	// store eval's score
 			undoMove(m);
 			
-			maxpq.add(m);										// @see Move.compareTo() for priority
-			minpq.add(m);
-			if (maxpq.size() > maxBreadth)
-				maxpq.remove(minpq.poll());
+			maxPQ.add(m);										// @see Move.compareTo() for priority
+			minPQ.add(m);
+			if (maxPQ.size() > maxBreadth)
+				maxPQ.remove(minPQ.poll());
 		}
 
 		// Consider best few moves only
 		Queue<Move> ret = new ArrayDeque<>();
 		for (int i = 0, t = Math.min(maxBreadth, dat.size()); i < t; i++)
-			ret.offer(maxpq.poll());
+			ret.offer(maxPQ.poll());
 		return ret;
 	}
 
