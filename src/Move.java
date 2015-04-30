@@ -87,17 +87,9 @@ public class Move implements Comparable<Move> {
 	/**
 	 * <h3>Hash function</h3><br>
 	 * A working model, does not guarantee uniform hashing<br>
-	 * 
-	 * Collisions among symmetric pieces are avoided by
-	 * multiplying 'to' coordinates by 2^4 in addition to incorporating 'from' coordinates
-	 * 
-	 * capture is multiplied by 2^24 so that differences in
-	 * position do not fill up the gap between difference in
-	 * captured pieces' int value, again, helping avoid collisions
 	 */
 	public int hashCode() {
-		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 4) + (Engine.board[y1][x1] << 14) + (capture << 24));
-//		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 3) + (Engine.board[y1][x1] << 6) + (capture << 9));
+		return (((y1 << 3) + x1) + (((y2 << 3) + x2) << 3) + (Engine.board[y1][x1] << 6) + (capture << 9));
 	}
 
 	@Override

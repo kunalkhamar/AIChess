@@ -88,6 +88,10 @@ public class Engine {
 	 * Reset board to original state
 	 */
 	public static void reset() {
+		nodesExplored = 0;
+		totalTime = 0;
+		botMoves = 0;
+		
 		board = new char[8][8];
 		String emptyRank = "        ";
 		String blackPieces = "rnbqkbnr";				// rook,knight,bishop,queen,king
