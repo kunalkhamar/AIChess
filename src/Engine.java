@@ -23,12 +23,12 @@ import javax.swing.SwingUtilities;
 
 public class Engine {
 
-	public static char[][] board = new char[8][8];		// Represents current state
-	public static int kingPosU, kingPosL;				// U/L - Upper/Lower case; king's position
-	public static int maxDepth = 7, maxBreadth = 7;		// depth = # of plies, breadth = # moves explored per ply
+	static char[][] board = new char[8][8];		// Represents current state
+	static int kingPosU, kingPosL;				// U/L - Upper/Lower case; king's position
 	static long nodesExplored = 0;
 	static double totalTime = 0;
 	static int botMoves = 0;
+	private static int maxDepth = 7, maxBreadth = 7;	// depth = # of plies, breadth = # moves explored per ply
 
 	public static final Map<Character, Byte> PIECE_BYTE = new HashMap<>();
 	/* static initializer */
@@ -54,13 +54,14 @@ public class Engine {
 	public Engine() {
 		reset();
 
+		// dispatch thread
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 				try {
 					GUI window = new GUI();
 					ImageIcon chessThrones = window.scale(new ImageIcon(getClass().getResource("/res/chessthrones.jpg")), 500, -1);
-					window.frame.setVisible(true);
-					JOptionPane.showMessageDialog(window.frame, null, "AI Chess", 0, chessThrones);
+					window.getFrame().setVisible(true);
+					JOptionPane.showMessageDialog(window.getFrame(), null, "AI Chess", 0, chessThrones);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -87,7 +88,7 @@ public class Engine {
 	/**
 	 * Reset board to original state
 	 */
-	public static void reset() {
+	static void reset() {
 		nodesExplored = 0;
 		totalTime = 0;
 		botMoves = 0;
@@ -116,7 +117,7 @@ public class Engine {
 	 * Flip the board along diagonal from top left to bottom right.<br>
 	 * Switch white pieces with black pieces
 	 */
-	public static void flipAndSwitchBoard() {
+	static void flipAndSwitchBoard() {
 		char t;
 		for (int i = 0; i < 32; i++) {
 			int r = i / 8, c = i % 8;
@@ -139,48 +140,45 @@ public class Engine {
 
 	/**
 	 * Make move represented by the move object
-	 * 
 	 * @param m
 	 */
-	public static void makeMove(Move m) {
-		if (m.capture == 'P') {
+	static void makeMove(Move m) {
+		if (m.getCapture() == 'P') {
 			/* Pawn promotion */
-			board[1][m.y1] = ' ';
-			board[0][m.x1] = Move.BYTE_PIECE.get((byte) m.x2);
+			board[1][m.getY1()] = ' ';
+			board[0][m.getX1()] = Move.BYTE_PIECE.get((byte) m.getX2());
 		} else {
 			/* Not pawn promotion */
-			board[m.y2][m.x2] = board[m.y1][m.x1];
-			board[m.y1][m.x1] = ' ';
-			if (board[m.y2][m.x2] == 'K')	// update king position
-				kingPosU = m.y2 * 8 + m.x2;
+			board[m.getY2()][m.getX2()] = board[m.getY1()][m.getX1()];
+			board[m.getY1()][m.getX1()] = ' ';
+			if (board[m.getY2()][m.getX2()] == 'K')	// update king position
+				kingPosU = m.getY2() * 8 + m.getX2();
 		}
 	}
 
 	/**
 	 * Undo the move that was made in accord with the move object
-	 * 
 	 * @param m
 	 */
-	public static void undoMove(Move m) {
-		if (m.capture == 'P') {
+	static void undoMove(Move m) {
+		if (m.getCapture() == 'P') {
 			/* Pawn promotion */
-			board[1][m.y1] = 'P';
-			board[0][m.x1] = Move.BYTE_PIECE.get((byte) m.y2);
+			board[1][m.getY1()] = 'P';
+			board[0][m.getX1()] = Move.BYTE_PIECE.get((byte) m.getY2());
 		} else {
 			/* Not pawn promotion */
-			board[m.y1][m.x1] = board[m.y2][m.x2];
-			board[m.y2][m.x2] = m.capture;
-			if (board[m.y1][m.x1] == 'K')	// update king position
-				kingPosU = m.y1 * 8 + m.x1;
+			board[m.getY1()][m.getX1()] = board[m.getY2()][m.getX2()];
+			board[m.getY2()][m.getX2()] = m.getCapture();
+			if (board[m.getY1()][m.getX1()] == 'K')	// update king position
+				kingPosU = m.getY1() * 8 + m.getX1();
 		}
 	}
 
 	/**
 	 * Get a set of all possible moves of 'uppercase side'
-	 * 
 	 * @return A set of all possible moves of 'uppercase side'
 	 */
-	public static Set<Move> getMoves() {
+	static Set<Move> getMoves() {
 		Set<Move> set = new HashSet<>();
 
 		for (int i = 0; i < 8; i++) {
@@ -220,20 +218,17 @@ public class Engine {
 	 * General notes:
 	 * 
 	 * 1. The try-catch blocks that throw 
-	 * ArrayIndexOutOfBoundsException are required as:
-	 * The loops do not check if all indices they are 
-	 * working with are in bounds.
+	 * ArrayIndexOutOfBoundsException are required as
+	 * the loops do not check if all indices are in bounds.
 	 * 
 	 * 2. All moves are returned for the side represented
 	 * by uppercase pieces
 	 * 
-	 * 3. isValidMove() applies to every other piece's get___Moves 
-	 * 
+	 * 3. isValidMove() applies to every piece's get___Moves 
 	 */
 
 	/**
 	 * Check if move is in bounds and does not leave king under check
-	 * 
 	 * @param r
 	 * @param c
 	 * @param cr
@@ -259,11 +254,10 @@ public class Engine {
 
 	/**
 	 * Get all possible king moves
-	 * 
 	 * @param loc
 	 * @return Possible king moves
 	 */
-	public static Collection<Move> getKingMoves(int loc) {
+	static Collection<Move> getKingMoves(int loc) {
 		List<Move> list = new ArrayList<>();
 		int r = loc / 8, c = loc % 8;
 
@@ -282,8 +276,7 @@ public class Engine {
 							list.add(new Move(r, c, cr, cc, cur));
 						kingPosU = kingTemp;
 					}
-				} catch (ArrayIndexOutOfBoundsException e) {
-				}
+				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
 		}
 
@@ -293,7 +286,6 @@ public class Engine {
 
 	/**
 	 * Get all possible queen moves
-	 * 
 	 * @param loc
 	 * @return Possible queen moves
 	 */
@@ -324,8 +316,7 @@ public class Engine {
 						if (isValidMove(r, c, cr, cc, 'Q'))
 							list.add(new Move(r, c, cr, cc, board[cr][cc]));
 					}
-				} catch (ArrayIndexOutOfBoundsException e) {
-				}
+				} catch (ArrayIndexOutOfBoundsException e) {}
 				dist = 1;
 			}
 		}
@@ -334,7 +325,6 @@ public class Engine {
 
 	/**
 	 * Get all possible bishop moves
-	 * 
 	 * @param loc
 	 * @param piece
 	 *            In case a queen's moves are being assessed
@@ -364,8 +354,7 @@ public class Engine {
 					if (Character.isLowerCase(board[cr][cc]))
 						if (isValidMove(r, c, cr, cc, piece))
 							list.add(new Move(r, c, cr, cc, board[cr][cc]));
-				} catch (ArrayIndexOutOfBoundsException e) {
-				}
+				} catch (ArrayIndexOutOfBoundsException e) {}
 				dist = 1;
 			}
 		}
@@ -374,7 +363,6 @@ public class Engine {
 
 	/**
 	 * Get all possible rook moves
-	 * 
 	 * @param loc
 	 * @param piece
 	 *            In case a queen's moves are being assessed
@@ -403,8 +391,7 @@ public class Engine {
 				if (Character.isLowerCase(board[cr][cc]))
 					if (isValidMove(r, c, cr, cc, piece))
 						list.add(new Move(r, c, cr, cc, board[cr][cc]));
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			dist = 1;
 			try {
 				int cr = r + dist * i;
@@ -421,18 +408,17 @@ public class Engine {
 				if (Character.isLowerCase(board[cr][cc]))
 					if (isValidMove(r, c, cr, cc, piece))
 						list.add(new Move(r, c, cr, cc, board[cr][cc]));
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			dist = 1;
 		}
 		return list;
 	}
 
-	private static final int[][] KNIGHT_MOVES = { { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 }, { 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 } };
+	private static final int[][] KNIGHT_MOVES = { { -2, -1 }, { -2, 1 }, { -1, -2 }, { -1, 2 }, 
+												{ 1, -2 }, { 1, 2 }, { 2, -1 }, { 2, 1 } };
 
 	/**
 	 * Get all possible knight moves
-	 * 
 	 * @param loc
 	 * @return Possible knight moves
 	 */
@@ -449,12 +435,17 @@ public class Engine {
 				if (cur == ' ' || Character.isLowerCase(cur))
 					if (isValidMove(r, c, cr, cc, 'N'))
 						list.add(new Move(r, c, cr, cc, cur));
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 		}
 		return list;
 	}
 
+	/**
+	 * Get all possible pawn moves
+	 * Take into account pawn promotion
+	 * @param loc
+	 * @return Possible pawn moves
+	 */
 	private static Collection<Move> getPawnMoves(int loc) {
 		List<Move> list = new ArrayList<>();
 		int r = loc / 8, c = loc % 8;
@@ -466,18 +457,16 @@ public class Engine {
 				if (loc >= 16 && Character.isLowerCase(board[r - 1][c + j]))
 					if (isValidMove(r, c, r - 1, c + j, 'P'))
 						list.add(new Move(r, c, r - 1, c + j, board[r - 1][c + j]));
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 
 			/* Promotion and Capture */
 			try {
 				if (loc < 16 && Character.isLowerCase(board[r - 1][c + j]))
 					for (int k = 0; k < 2; k++)
 						if (isValidMove(r, c, r - 1, c + j, 'P'))
-							// Notation: (column1,column2,captured-piece,new-piece,P)
+							// Notation: (column1,column2,captured-piece,new-piece,'P')
 							list.add(new Move(c, c + j, (int) PIECE_BYTE.get(board[r - 1][c + j]), (int) PIECE_BYTE.get(PROMOTION[k]), 'P'));
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 
 			/* Move one up */
 			if (loc >= 16 && board[r - 1][c] == ' ')
@@ -487,7 +476,7 @@ public class Engine {
 			if (loc < 16 && board[r - 1][c] == ' ')
 				for (int k = 0; k < 2; k++)
 					if (isValidMove(r, c, r - 1, c, 'P'))
-						// Notation: (column1,column2,captured-piece,new-piece,P)
+						// Notation: (column1,column2,captured-piece,new-piece,'P')
 						list.add(new Move(c, c, (int) PIECE_BYTE.get(' '), (int) PIECE_BYTE.get(PROMOTION[k]), 'P'));
 			/* Move two up */
 			if (loc >= 48 && board[r - 1][c] == ' ' && board[r - 2][c] == ' ')
@@ -503,11 +492,10 @@ public class Engine {
 	 * Do this by assuming one piece at a time that
 	 * king can move like every other piece and see
 	 * if the king attacks the piece it is mimicking
-	 * 
 	 * @return
 	 *         If king is threatened or not
 	 */
-	public static boolean underCheck() {
+	static boolean underCheck() {
 		int r = kingPosU / 8;
 		int c = kingPosU % 8;
 
@@ -522,8 +510,7 @@ public class Engine {
 							board[r + dist * i][c + dist * j] == 'q') {
 						return true;
 					}
-				} catch (Exception e) {
-				}
+				} catch (ArrayIndexOutOfBoundsException e) {}
 				dist = 1;
 			}
 		}
@@ -537,8 +524,7 @@ public class Engine {
 				if (board[r][c + dist * i] == 'r' ||
 						board[r][c + dist * i] == 'q')
 					return true;
-			} catch (Exception e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			dist = 1;
 			try {
 				while (board[r + dist * i][c] == ' ')
@@ -546,8 +532,7 @@ public class Engine {
 				if (board[r + dist * i][c] == 'r' ||
 						board[r + dist * i][c] == 'q')
 					return true;
-			} catch (Exception e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			dist = 1;
 		}
 
@@ -556,8 +541,7 @@ public class Engine {
 			try {
 				if (board[r + KNIGHT_MOVES[i][0]][c + KNIGHT_MOVES[i][1]] == 'n')
 					return true;
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 		}
 
 		// Pawn
@@ -565,13 +549,11 @@ public class Engine {
 			try {
 				if (board[r - 1][c - 1] == 'p')
 					return true;
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 			try {
 				if (board[r - 1][c + 1] == 'p')
 					return true;
-			} catch (ArrayIndexOutOfBoundsException e) {
-			}
+			} catch (ArrayIndexOutOfBoundsException e) {}
 		}
 
 		// The other king
@@ -582,8 +564,7 @@ public class Engine {
 				try {
 					if (board[r + i][c + j] == 'k')
 						return true;
-				} catch (ArrayIndexOutOfBoundsException e) {
-				}
+				} catch (ArrayIndexOutOfBoundsException e) {}
 			}
 		}
 
@@ -593,11 +574,10 @@ public class Engine {
 
 	/**
 	 * Returns true if there is at least one possible legal move
-	 * Assists in determining checkmate and stalemate
-	 * 
+	 * Helpful in determining checkmate and stalemate
 	 * @return getMoves().size == 0
 	 */
-	public static boolean canMove() {
+	static boolean canMove() {
 		for (int i = 0; i < 8; i++) {
 			for (int j = 0; j < 8; j++) {
 				if (board[i][j] == ' ' || Character.isLowerCase(board[i][j]))
@@ -638,7 +618,6 @@ public class Engine {
 	 * This implementation uses flipAndSwitchBoard() (and properties
 	 * of zero-sum games) to implement negamax version of the minimax algorithm.
 	 * The pruning is done by the alpha-beta heuristic
-	 * 
 	 * @param depth
 	 * @param alpha
 	 * @param beta
@@ -647,14 +626,14 @@ public class Engine {
 	 * @return The best move reported by the search
 	 * @throws InterruptedException 
 	 */
-	public static Move negaMax(Move move, int depth, int alpha, int beta, int player) throws InterruptedException {
+	static Move negaMax(Move move, int depth, int alpha, int beta, int player) throws InterruptedException {
 		if (Thread.currentThread().isInterrupted()) {
 			throw new InterruptedException();
 		}
 		
 		nodesExplored++;
 		if (depth == 0) {
-			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
+			move.setAlphaBetaScore(Evaluation.evaluate(0, depth) * (player * 2 - 1));
 			return move;
 		}
 
@@ -662,7 +641,7 @@ public class Engine {
 		Queue<Move> queue = sortAndFilterMoves(possibleMoves);	// Sort moves, discard some if too many
 
 		if (queue.size() == 0) {
-			move.alphaBetaScore = Evaluation.evaluate(0, depth) * (player * 2 - 1);
+			move.setAlphaBetaScore(Evaluation.evaluate(0, depth) * (player * 2 - 1));
 			return move;
 		}
 
@@ -674,40 +653,40 @@ public class Engine {
 			makeMove(m);
 			flipAndSwitchBoard();
 			Move ret = negaMax(m, depth - 1, alpha, beta, player);
-			int score = ret.alphaBetaScore;		// child's (opponent's) score (accurate)
+			int score = ret.getAlphaBetaScore();		// child's (opponent's) score (accurate)
 			flipAndSwitchBoard();
 			undoMove(m);
 
 			if (player == 0) {
 				if (score < beta) {
 					beta = score;
-					if (depth == maxDepth)
+					if (depth == getMaxDepth())
 						move = ret;
 				}
 			} else {
 				if (score > alpha) {
 					alpha = score;
-					if (depth == maxDepth)
+					if (depth == getMaxDepth())
 						move = ret;
 				}
 			}
 			/* Early termination/pruning heuristic */
 			if (alpha >= beta) {
 				if (player == 0) {
-					move.alphaBetaScore = beta;
+					move.setAlphaBetaScore(beta);
 					return move;
 				} else {
-					move.alphaBetaScore = alpha;
+					move.setAlphaBetaScore(alpha);
 					return move;
 				}
 			}
 		}
 
 		if (player == 0) {
-			move.alphaBetaScore = beta;
+			move.setAlphaBetaScore(beta);
 			return move;
 		} else {
-			move.alphaBetaScore = alpha;
+			move.setAlphaBetaScore(alpha);
 			return move;
 		}
 	}
@@ -716,17 +695,16 @@ public class Engine {
 	 * Select top k moves
 	 * Uses a max heap
 	 * Time ~ O(n log k)
-	 * 
 	 * @param dat
 	 * @return The best few moves
 	 */
-	public static Queue<Move> sortAndFilterMoves(Collection<Move> dat) {
+	private static Queue<Move> sortAndFilterMoves(Collection<Move> dat) {
 		PriorityQueue<Move> minPQ = new PriorityQueue<>(10);
 		PriorityQueue<Move> maxPQ = new PriorityQueue<>(10, Collections.reverseOrder());	// Descending comparator
 
 		for (Move m : dat) {
 			makeMove(m);
-			m.evalPlaceHolder = -Evaluation.evaluate(-1, 0);	// store eval's score
+			m.setEvalPlaceHolder(-Evaluation.evaluate(-1, 0));	// store eval's score
 			undoMove(m);
 			
 			maxPQ.add(m);										// @see Move.compareTo() for priority
@@ -735,7 +713,7 @@ public class Engine {
 				maxPQ.remove(minPQ.poll());
 		}
 
-		// Consider best few moves only
+		// Only consider the best maxBreadth amount of moves
 		Queue<Move> ret = new ArrayDeque<>();
 		for (int i = 0, t = Math.min(maxBreadth, dat.size()); i < t; i++)
 			ret.offer(maxPQ.poll());
@@ -745,9 +723,14 @@ public class Engine {
 	/**
 	 * Print board to console
 	 */
-	public static void printBoard() {
+	@SuppressWarnings("unused")
+	private static void printBoard() {
 		for (int i = 0; i < 8; i++)
 			System.out.println(Arrays.toString(board[i]));
+	}
+
+	public static int getMaxDepth() {
+		return maxDepth;
 	}
 
 }

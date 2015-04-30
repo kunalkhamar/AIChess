@@ -8,14 +8,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Move implements Comparable<Move> {
-	byte x1, y1;	// from location
-	byte x2, y2;	// to location
-	char capture;	// piece captured
-	/* For pawn promotion notation, see Engine.getPawnMoves() */
+	private byte x1, y1;	// from location
+	private byte x2, y2;	// to location
+	private char capture;	// piece captured
+	// Pawn promotion has the following notation:
+	// (x1,y1,x2,y2,capture) ->
+	//    (column1,column2,captured-piece,new-piece,'P')
 
 	/* Storage for temporary scores associated with board states */
-	int alphaBetaScore;
-	int evalPlaceHolder;
+	private int alphaBetaScore;
+	private int evalPlaceHolder;
 
 	/**
 	 * Map a byte to a piece
@@ -40,11 +42,11 @@ public class Move implements Comparable<Move> {
 	public Move() {}
 
 	public Move(byte y1, byte x1, byte y2, byte x2, char capture) {
-		this.x1 = x1;
-		this.y1 = y1;
-		this.x2 = x2;
-		this.y2 = y2;
-		this.capture = capture;
+		this.setX1(x1);
+		this.setY1(y1);
+		this.setX2(x2);
+		this.setY2(y2);
+		this.setCapture(capture);
 	}
 
 	public Move(int r, int c, int cr, int cc, char capture) {
@@ -61,7 +63,7 @@ public class Move implements Comparable<Move> {
 			return false;
 		if (this.getClass() != o.getClass())
 			return false;
-		if (this == o)		// Optimization: check if pointers point to same location
+		if (this == o)		// check if pointers point to same location
 			return true;
 
 		Move that = (Move) o;
@@ -69,9 +71,10 @@ public class Move implements Comparable<Move> {
 	}
 
 	public boolean equals(Move that) {
-		if (this.x1 != that.x1 || this.y1 != that.y1 || this.x2 != that.x2 || this.y2 != that.y2)
+		if (this.getX1() != that.getX1() || this.getY1() != that.getY1() || 
+			this.getX2() != that.getX2() || this.getY2() != that.getY2())
 			return false;
-		if (this.capture != that.capture)
+		if (this.getCapture() != that.getCapture())
 			return false;
 		return true;
 	}
@@ -94,7 +97,66 @@ public class Move implements Comparable<Move> {
 
 	@Override
 	public int compareTo(Move that) {
-		return Integer.compare(this.evalPlaceHolder, that.evalPlaceHolder);
+		return Integer.compare(this.getEvalPlaceHolder(), that.getEvalPlaceHolder());
+	}
+
+	
+	/* Getters and setters */
+	
+	public char getCapture() {
+		return capture;
+	}
+
+	public void setCapture(char capture) {
+		this.capture = capture;
+	}
+
+	public byte getY1() {
+		return y1;
+	}
+
+	public void setY1(byte y1) {
+		this.y1 = y1;
+	}
+
+	public byte getX1() {
+		return x1;
+	}
+
+	public void setX1(byte x1) {
+		this.x1 = x1;
+	}
+
+	public byte getY2() {
+		return y2;
+	}
+
+	public void setY2(byte y2) {
+		this.y2 = y2;
+	}
+
+	public byte getX2() {
+		return x2;
+	}
+
+	public void setX2(byte x2) {
+		this.x2 = x2;
+	}
+
+	public int getAlphaBetaScore() {
+		return alphaBetaScore;
+	}
+
+	public void setAlphaBetaScore(int alphaBetaScore) {
+		this.alphaBetaScore = alphaBetaScore;
+	}
+
+	public int getEvalPlaceHolder() {
+		return evalPlaceHolder;
+	}
+
+	public void setEvalPlaceHolder(int evalPlaceHolder) {
+		this.evalPlaceHolder = evalPlaceHolder;
 	}
 
 }

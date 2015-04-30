@@ -28,29 +28,30 @@ import javax.swing.JPanel;
 
 public class GUI implements ActionListener {
 
-	JFrame frame;
-	int W = 448 / 8;					// width of piece
-	int H = W;							// height of piece
+	private JFrame frame;
+	private int W = 448 / 8;					// width of piece
+	private int H = W;							// height of piece
 
-	JButton[] buttons = new JButton[64];// 'squares' of the board
-	int prevLoc = -1, curLoc = -1;		// button presses
+	private JButton[] buttons = new JButton[64];// 'squares' of the board
+	private int prevLoc = -1, curLoc = -1;		// button presses
 	
-	Thread computationThread ;
+	private Set<Move> userPossibilities;	// possible moves for user
+	private Thread computationThread;
 
 	/* Images for pieces */
-	ImageIcon K = scale(new ImageIcon(getClass().getResource("/res/White/wking.png")), W, H);
-	ImageIcon Q = scale(new ImageIcon(getClass().getResource("/res/White/wqueen.png")), W, H);
-	ImageIcon R = scale(new ImageIcon(getClass().getResource("/res/White/wrook.png")), W, H);
-	ImageIcon B = scale(new ImageIcon(getClass().getResource("/res/White/wbishop.png")), W, H);
-	ImageIcon N = scale(new ImageIcon(getClass().getResource("/res/White/wknight.png")), W, H);
-	ImageIcon P = scale(new ImageIcon(getClass().getResource("/res/White/wpawn.png")), W, H);
+	private ImageIcon K = scale(new ImageIcon(getClass().getResource("/res/White/wking.png")), W, H);
+	private ImageIcon Q = scale(new ImageIcon(getClass().getResource("/res/White/wqueen.png")), W, H);
+	private ImageIcon R = scale(new ImageIcon(getClass().getResource("/res/White/wrook.png")), W, H);
+	private ImageIcon B = scale(new ImageIcon(getClass().getResource("/res/White/wbishop.png")), W, H);
+	private ImageIcon N = scale(new ImageIcon(getClass().getResource("/res/White/wknight.png")), W, H);
+	private ImageIcon P = scale(new ImageIcon(getClass().getResource("/res/White/wpawn.png")), W, H);
 
-	ImageIcon k = scale(new ImageIcon(getClass().getResource("/res/Black/bking.png")), W, H);
-	ImageIcon q = scale(new ImageIcon(getClass().getResource("/res/Black/bqueen.png")), W, H);
-	ImageIcon r = scale(new ImageIcon(getClass().getResource("/res/Black/brook.png")), W, H);
-	ImageIcon b = scale(new ImageIcon(getClass().getResource("/res/Black/bbishop.png")), W, H);
-	ImageIcon n = scale(new ImageIcon(getClass().getResource("/res/Black/bknight.png")), W, H);
-	ImageIcon p = scale(new ImageIcon(getClass().getResource("/res/Black/bpawn.png")), W, H);
+	private ImageIcon k = scale(new ImageIcon(getClass().getResource("/res/Black/bking.png")), W, H);
+	private ImageIcon q = scale(new ImageIcon(getClass().getResource("/res/Black/bqueen.png")), W, H);
+	private ImageIcon r = scale(new ImageIcon(getClass().getResource("/res/Black/brook.png")), W, H);
+	private ImageIcon b = scale(new ImageIcon(getClass().getResource("/res/Black/bbishop.png")), W, H);
+	private ImageIcon n = scale(new ImageIcon(getClass().getResource("/res/Black/bknight.png")), W, H);
+	private ImageIcon p = scale(new ImageIcon(getClass().getResource("/res/Black/bpawn.png")), W, H);
 
 	final Map<Character, ImageIcon> CHAR_IMAGE = new HashMap<>();
 
@@ -71,7 +72,7 @@ public class GUI implements ActionListener {
 		CHAR_IMAGE.put('N', N);
 		CHAR_IMAGE.put('P', P);
 		initialize();
-		update();
+		updateBoard();
 	}
 
 	/**
@@ -86,15 +87,15 @@ public class GUI implements ActionListener {
 		}
 		*/
 		
-		frame = new JFrame("AI Chess");
-		frame.setBackground(new Color(240, 240, 240));
-		frame.setBounds(0, 0, 448, 20 + 448);
-		frame.setResizable(false);
-		frame.setLocationRelativeTo(null);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setFrame(new JFrame("AI Chess"));
+		getFrame().setBackground(new Color(240, 240, 240));
+		getFrame().setBounds(0, 0, 448, 20 + 448);
+		getFrame().setResizable(false);
+		getFrame().setLocationRelativeTo(null);
+		getFrame().setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 		JMenuBar menuBar = new JMenuBar();
-		frame.setJMenuBar(menuBar);
+		getFrame().setJMenuBar(menuBar);
 
 		JMenu fileMenu = new JMenu("File");
 		menuBar.add(fileMenu);
@@ -125,7 +126,8 @@ public class GUI implements ActionListener {
 		JMenuItem exitItem = new JMenuItem("Exit");
 		exitItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose();
+				terminateComputation();
+				getFrame().dispose();
 				System.exit(0);
 			}
 		});
@@ -143,14 +145,13 @@ public class GUI implements ActionListener {
 				boardButtons.add(buttons[loc]);
 			}
 		}
-		frame.getContentPane().add(boardButtons);
+		getFrame().getContentPane().add(boardButtons);
 	}
 
 	final Color CHESSBOARD_BLUE = new Color(0, 166, 172);
 
 	/**
 	 * Set button color - checkerboard
-	 * 
 	 * @param i
 	 * @param j
 	 */
@@ -174,7 +175,6 @@ public class GUI implements ActionListener {
 
 	/**
 	 * Scale icon to provided dimensions
-	 * 
 	 * @param in
 	 * @param W
 	 * @param H
@@ -187,8 +187,6 @@ public class GUI implements ActionListener {
 		ImageIcon impic = new ImageIcon(nimg);
 		return impic;
 	}
-
-	Set<Move> userPossibilities;
 
 	/**
 	 * 1 Convert button presses to moves
@@ -231,17 +229,17 @@ public class GUI implements ActionListener {
 				userPossibilities = Engine.getMoves();
 			if (userPossibilities.contains(userMove)) {		// move is valid
 				Engine.makeMove(userMove);
-				update();
+				updateBoard();
 				Engine.flipAndSwitchBoard();
 
 				/* Check termination */
 				boolean compGameOver = !Engine.canMove();
 				if (compGameOver && Engine.underCheck())
 					// Checkmate
-					JOptionPane.showMessageDialog(frame, "You won!");
+					JOptionPane.showMessageDialog(getFrame(), "You won!");
 				else if (compGameOver)
 					// Stalemate
-					JOptionPane.showMessageDialog(frame, "Draw");
+					JOptionPane.showMessageDialog(getFrame(), "Draw");
 				if (compGameOver)
 					System.exit(0);
 
@@ -250,7 +248,7 @@ public class GUI implements ActionListener {
 					public void run() {
 						final long startTime = System.currentTimeMillis();
 						try {
-							Engine.makeMove(Engine.negaMax(new Move(), Engine.maxDepth, -10000000, 10000000, 0));
+							Engine.makeMove(Engine.negaMax(new Move(), Engine.getMaxDepth(), -10000000, 10000000, 0));
 							onFinishComputation(startTime, System.currentTimeMillis());
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
@@ -269,9 +267,9 @@ public class GUI implements ActionListener {
 	 * @param startTime
 	 * @param endTime
 	 */
-	public void onFinishComputation(final long startTime, final long endTime) {
+	private void onFinishComputation(final long startTime, final long endTime) {
 		Engine.flipAndSwitchBoard();
-		update();
+		updateBoard();
 		double moveTime = (endTime - startTime) / 1000.0;
 		Engine.botMoves++;
 		Engine.totalTime += (endTime - startTime);
@@ -282,10 +280,10 @@ public class GUI implements ActionListener {
 		boolean humanGameOver = !Engine.canMove();
 		if (humanGameOver && Engine.underCheck())
 			// Checkmate
-			JOptionPane.showMessageDialog(frame, "Computer won!");
+			JOptionPane.showMessageDialog(getFrame(), "Computer won!");
 		else if (humanGameOver)
 			// Stalemate
-			JOptionPane.showMessageDialog(frame, "Draw");
+			JOptionPane.showMessageDialog(getFrame(), "Draw");
 		if (humanGameOver)
 			System.exit(0);
 		userPossibilities = Engine.getMoves();
@@ -295,7 +293,24 @@ public class GUI implements ActionListener {
 	/**
 	 * Reset and start new game
 	 */
-	public void reset() {
+	private void reset() {
+		terminateComputation();
+		userPossibilities = null;
+		Engine.reset();
+		updateBoard();
+		
+		// Update console
+		String dashes = "----------";
+		StringBuffer sb = new StringBuffer(dashes);
+		for (int i = 0; i < 6; i++)
+			sb.append(dashes);
+		System.out.println(sb.toString());
+	}
+	
+	/**
+	 * Terminate thread if spawned
+	 */
+	private void terminateComputation() {
 		if (computationThread.isAlive()) {
 			try {
 				computationThread.interrupt();
@@ -304,20 +319,26 @@ public class GUI implements ActionListener {
 				e.printStackTrace();
 			}
 		}
-		Engine.reset();
-		update();
 	}
 
 	/**
 	 * Reset icon of all buttons
 	 * according to board state
 	 */
-	public void update() {
+	private void updateBoard() {
 		for (int i = 0; i < 8; i++)
 			for (int j = 0; j < 8; j++) {
 				buttons[i * 8 + j].setIcon(CHAR_IMAGE.get(Engine.board[i][j]));
 				setButtonColor(i, j);
 			}
+	}
+
+	public JFrame getFrame() {
+		return frame;
+	}
+
+	public void setFrame(JFrame frame) {
+		this.frame = frame;
 	}
 
 }
