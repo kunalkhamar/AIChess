@@ -8,6 +8,7 @@ AI was incorporated using the minimax algorithm, sped up by the alpha-beta pruni
 [game]: ./gameplay-mid.png "Game play"
 ![alt-text][game]  
 
+---
 ### Moving a piece  
 #### Perform the following two clicks:  
 1. Click anywhere on the square containing the piece
