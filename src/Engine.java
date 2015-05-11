@@ -70,10 +70,10 @@ public class Engine {
 
 		/* Set difficulty */
 //		String[] option = { "Medium", "Easy", "Easier" };
-		String[] option = { "Easy", "Easier" };
+		String[] option = { "Hard", "Medium" };
 		int easy = JOptionPane.showOptionDialog(null, "Select difficulty", "Difficulty Levels",
-				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[0]);
-		if (easy == -1) {	// "Medium" difficulty disabled for now
+				JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, option, option[1]);
+		if (easy == -1) {	// this difficulty is disabled for now
 			maxDepth = 8;
 			maxBreadth = 9;
 		} else if (easy == 0) {
