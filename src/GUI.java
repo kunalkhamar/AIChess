@@ -311,7 +311,7 @@ public class GUI implements ActionListener {
 	 * Terminate thread if spawned
 	 */
 	private void terminateComputation() {
-		if (computationThread.isAlive()) {
+		if (computationThread != null && computationThread.isAlive()) {
 			try {
 				computationThread.interrupt();
 				computationThread.join();
