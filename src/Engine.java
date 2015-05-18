@@ -1,6 +1,9 @@
 /**
+ * This class contains the logic of the game and the move 
+ * recommending agent.
+ * Also shows the startup splash screens to set difficulty
+ *   
  * ICS4U Mrs. Kapustina
- * 
  * @author Kunal
  */
 

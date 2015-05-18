@@ -1,6 +1,7 @@
 /**
- * ICS4U Mrs. Kapustina
+ * Implementation of the Move data structure
  * 
+ * ICS4U Mrs. Kapustina 
  * @author Kunal
  */
 

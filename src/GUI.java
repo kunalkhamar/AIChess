@@ -1,6 +1,8 @@
 /**
- * ICS4U Mrs. Kapustina
+ * The GUI is managed from this class.
+ * Update the display and respond to events.
  * 
+ * ICS4U Mrs. Kapustina
  * @author Kunal
  */
 
@@ -29,8 +31,8 @@ import javax.swing.JPanel;
 public class GUI implements ActionListener {
 
 	private JFrame frame;
-	private int W = 448 / 8;					// width of piece
-	private int H = W;							// height of piece
+	private final int W = 448 / 8;				// width of piece
+	private final int H = W;					// height of piece
 
 	private JButton[] buttons = new JButton[64];// 'squares' of the board
 	private int prevLoc = -1, curLoc = -1;		// button presses
