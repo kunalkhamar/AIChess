@@ -2,8 +2,8 @@
 Runnable JAR:  
 https://github.com/kunalkhamar/AIChess/blob/master/AIChess.jar?raw=true
 
-A simple chess engine with AI, originally created for a course in object-oriented software development.  
-AI was incorporated using the minimax algorithm, sped up by the alpha-beta pruning heuristic.
+A chess game with an AI engine and a minimalist user interface.  
+Artificial intelligence was incorporated using the minimax algorithm, sped up by the alpha-beta pruning heuristic.
 
 [game]: ./gameplay-mid.png "Game play"
 ![alt-text][game]  
